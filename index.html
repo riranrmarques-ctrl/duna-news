@@ -64,6 +64,8 @@
       width: 220px;
       backdrop-filter: blur(4px);
       box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      text-decoration: none;
+      color: #fff;
     }
 
     .qr-box img {
@@ -129,12 +131,13 @@
     <img id="imagem" class="background" src="" alt="Imagem da notícia" />
     <div class="overlay"></div>
 
-    <img class="logo-topo" src="imagem.png" alt="Ilhéus Eventos" />
+    <!-- ✅ LOGO ATUALIZADA -->
+    <img class="logo-topo" src="logo.png" alt="Duna News" />
 
-    <div class="qr-box">
-      <img src="adobe-express-qr-code.png" alt="QR Code" />
+    <a id="qrLink" class="qr-box" href="#" target="_blank">
+      <img id="qrCode" src="adobe-express-qr-code.png" alt="QR Code" />
       <div class="qr-texto">Veja a notícia no site</div>
-    </div>
+    </a>
 
     <div class="conteudo">
       <div class="fonte">Fonte: Ilhéus Eventos</div>
@@ -143,6 +146,11 @@
   </div>
 
   <script>
+    const imagemEl = document.getElementById("imagem");
+    const tituloEl = document.getElementById("titulo");
+    const qrLinkEl = document.getElementById("qrLink");
+    const qrCodeEl = document.getElementById("qrCode");
+
     fetch("/.netlify/functions/news")
       .then(res => {
         if (!res.ok) throw new Error("Erro ao carregar notícia");
@@ -150,15 +158,31 @@
       })
       .then(data => {
         const noticia = data[0] || {};
-        document.getElementById("titulo").innerText = noticia.titulo || "Sem título";
+
+        tituloEl.innerText = noticia.titulo || "Sem título";
 
         if (noticia.imagem) {
-          document.getElementById("imagem").src = noticia.imagem;
+          imagemEl.src = noticia.imagem;
+        } else {
+          imagemEl.style.display = "none";
+        }
+
+        if (noticia.link) {
+          qrLinkEl.href = noticia.link;
+
+          qrCodeEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(noticia.link)}`;
+        } else {
+          qrLinkEl.removeAttribute("href");
         }
       })
       .catch(() => {
-        document.getElementById("titulo").innerText = "Erro ao carregar notícia";
+        tituloEl.innerText = "Erro ao carregar notícia";
+        imagemEl.style.display = "none";
       });
+
+    imagemEl.addEventListener("error", () => {
+      imagemEl.style.display = "none";
+    });
   </script>
 </body>
 </html>
