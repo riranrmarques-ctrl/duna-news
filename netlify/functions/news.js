@@ -7,12 +7,47 @@ exports.handler = async function () {
 
   const $ = cheerio.load(html);
 
-  const capa = $(".jeg_heroblock .jeg_post");
-  const tituloPrincipal = capa.find(".jeg_post_title a").first().text().trim();
-  const imagemPrincipal = capa.find("img").first().attr("src");
+  let tituloPrincipal = "";
+  let imagemPrincipal = "";
+
+  const candidatosTitulo = [
+    ".jeg_heroblock .jeg_post_title a",
+    ".jeg_hero_item_1 .jeg_post_title a",
+    ".featured-post .jeg_post_title a",
+    ".jeg_main_content .jeg_post_title a",
+    "h1 a",
+    "h2 a"
+  ];
+
+  const candidatosImagem = [
+    ".jeg_heroblock img",
+    ".jeg_hero_item_1 img",
+    ".featured-post img",
+    ".jeg_main_content img",
+    "img"
+  ];
+
+  for (const seletor of candidatosTitulo) {
+    const texto = $(seletor).first().text().trim();
+    if (texto) {
+      tituloPrincipal = texto;
+      break;
+    }
+  }
+
+  for (const seletor of candidatosImagem) {
+    const src = $(seletor).first().attr("src");
+    if (src) {
+      imagemPrincipal = src;
+      break;
+    }
+  }
 
   return {
     statusCode: 200,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8"
+    },
     body: JSON.stringify([
       {
         titulo: tituloPrincipal,
