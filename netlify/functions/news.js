@@ -10,30 +10,26 @@ exports.handler = async function () {
 
     const html = await res.text();
 
-    const imagemMatch = html.match(
-      /<img[^>]+src="(https:\/\/ilheuseventos\.com\.br\/[^"]+\.(jpg|jpeg|png|webp))"/i
-    );
+    const regex =
+      /data-bg-image="url\((https:\/\/ilheuseventos\.com\.br\/[^)]+)\)"[\s\S]*?<h1 itemprop="name" class="entry-title qode-post-title">\s*<a itemprop="url" href="([^"]+)" title="([^"]+)"/gi;
 
-    const tituloMatch = html.match(
-      /<h1[^>]*class="[^"]*entry-title[^"]*"[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*title="([^"]+)"/i
-    );
+    const noticias = [];
+    let match;
 
-    const imagemPrincipal = imagemMatch ? imagemMatch[1] : "";
-    const linkNoticia = tituloMatch ? tituloMatch[1] : "";
-    const tituloPrincipal = tituloMatch ? tituloMatch[2] : "Sem título";
+    while ((match = regex.exec(html)) !== null && noticias.length < 3) {
+      noticias.push({
+        imagem: match[1] || "",
+        link: match[2] || "",
+        titulo: match[3] || "Sem título"
+      });
+    }
 
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json; charset=utf-8"
       },
-      body: JSON.stringify([
-        {
-          titulo: tituloPrincipal,
-          imagem: imagemPrincipal,
-          link: linkNoticia
-        }
-      ])
+      body: JSON.stringify(noticias)
     };
   } catch (error) {
     return {
@@ -42,7 +38,7 @@ exports.handler = async function () {
         "Content-Type": "application/json; charset=utf-8"
       },
       body: JSON.stringify({
-        erro: "Erro ao buscar notícia",
+        erro: "Erro ao buscar notícias",
         detalhe: error.message
       })
     };
