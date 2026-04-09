@@ -34,6 +34,7 @@
       height: 100%;
       object-fit: cover;
       filter: brightness(0.58);
+      transition: opacity 0.6s ease;
     }
 
     .overlay {
@@ -150,26 +151,56 @@
     const qrLinkEl = document.getElementById("qrLink");
     const qrCodeEl = document.getElementById("qrCode");
 
+    let noticias = [];
+    let indiceAtual = 0;
+
+    function mostrarNoticia(index) {
+      if (!noticias.length) return;
+
+      const noticia = noticias[index];
+
+      tituloEl.innerText = noticia.titulo || "Sem título";
+
+      if (noticia.imagem) {
+        imagemEl.style.display = "block";
+        imagemEl.src = noticia.imagem;
+      } else {
+        imagemEl.style.display = "none";
+      }
+
+      if (noticia.link) {
+        qrLinkEl.href = noticia.link;
+        qrCodeEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(noticia.link)}`;
+      } else {
+        qrLinkEl.href = "https://ilheuseventos.com.br/";
+      }
+    }
+
     fetch("/.netlify/functions/news")
       .then(res => {
-        if (!res.ok) throw new Error("Erro ao carregar notícia");
+        if (!res.ok) throw new Error("Erro ao carregar notícias");
         return res.json();
       })
       .then(data => {
-        const noticia = data[0] || {};
+        noticias = Array.isArray(data) ? data : [];
 
-        tituloEl.innerText = noticia.titulo || "Sem título";
-
-        if (noticia.imagem) {
-          imagemEl.src = noticia.imagem;
+        if (!noticias.length) {
+          tituloEl.innerText = "Nenhuma notícia encontrada";
+          return;
         }
 
-        if (noticia.link) {
-          qrLinkEl.href = noticia.link;
+        mostrarNoticia(indiceAtual);
+
+        if (noticias.length > 1) {
+          setInterval(() => {
+            indiceAtual = (indiceAtual + 1) % noticias.length;
+            mostrarNoticia(indiceAtual);
+          }, 10000);
         }
       })
       .catch(() => {
-        tituloEl.innerText = "Erro ao carregar notícia";
+        tituloEl.innerText = "Erro ao carregar notícias";
+        imagemEl.style.display = "none";
       });
 
     imagemEl.addEventListener("error", () => {
