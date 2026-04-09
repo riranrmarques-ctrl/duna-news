@@ -4,17 +4,12 @@ exports.handler = async function () {
   const res = await fetch("https://ilheuseventos.com.br/");
   const html = await res.text();
 
-  const blocoMatch = html.match(
-    /<div class="qode-news-item qode-slider1-item[\s\S]*?<div class="qode-news-item-image-holder[\s\S]*?data-bg-image="url\((.*?)\)"[\s\S]*?<h1[^>]*class="entry-title qode-post-title"[\s\S]*?<a[^>]*title="(.*?)"/i
+  const match = html.match(
+    /data-bg-image="url\((https:\/\/ilheuseventos\.com\.br\/site\/wp-content\/uploads\/[^"]+)\)"[\s\S]*?<h1 itemprop="name" class="entry-title qode-post-title">[\s\S]*?<a[^>]*title="([^"]+)"/i
   );
 
-  let imagemPrincipal = "";
-  let tituloPrincipal = "";
-
-  if (blocoMatch) {
-    imagemPrincipal = blocoMatch[1] || "";
-    tituloPrincipal = blocoMatch[2] || "";
-  }
+  const imagemPrincipal = match ? match[1] : "";
+  const tituloPrincipal = match ? match[2] : "Sem título";
 
   return {
     statusCode: 200,
