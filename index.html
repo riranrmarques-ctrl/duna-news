@@ -1,27 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Duna News</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Duna News</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .tela {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.2));
+    }
+
+    .conteudo {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding: 40px;
+    }
+
+    .fonte {
+      font-size: 20px;
+      margin-bottom: 12px;
+      color: #7ec8ff;
+    }
+
+    .titulo {
+      font-size: 54px;
+      font-weight: bold;
+      line-height: 1.1;
+      max-width: 1200px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+    }
+
+    .fallback {
+      background: #000;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+  </style>
 </head>
+<body>
+  <div id="tela" class="tela fallback">
+    <div class="overlay"></div>
+    <div class="conteudo">
+      <div class="fonte">Fonte: Ilhéus Eventos</div>
+      <div id="titulo" class="titulo">Carregando...</div>
+    </div>
+  </div>
 
-<body style="background:black; color:white; font-family:Arial;">
+  <script>
+    async function carregarNoticia() {
+      const res = await fetch("/.netlify/functions/news");
+      const dados = await res.json();
+      const noticia = dados[0];
 
-<h1 id="titulo">Carregando...</h1>
-<img id="img" width="600">
+      const tela = document.getElementById("tela");
+      const titulo = document.getElementById("titulo");
 
-<script>
-async function carregar() {
+      titulo.textContent = noticia.titulo || "Sem título";
 
-  const res = await fetch("/.netlify/functions/news");
-  const data = await res.json();
+      if (noticia.imagem) {
+        tela.style.backgroundImage = `url("${noticia.imagem}")`;
+        tela.classList.remove("fallback");
+      }
+    }
 
-  document.getElementById("titulo").innerText = data[0].titulo;
-  document.getElementById("img").src = data[0].imagem;
-}
-
-carregar();
-</script>
-
+    carregarNoticia();
+  </script>
 </body>
 </html>
