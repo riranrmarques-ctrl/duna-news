@@ -7,17 +7,33 @@ exports.handler = async function () {
 
   const $ = cheerio.load(html);
 
-  const capa = $(".jeg_heroblock");
+  let tituloPrincipal = "";
+  let imagemPrincipal = "";
 
-  const tituloPrincipal = capa.find(".jeg_post_title a").first().text().trim();
+  // Pega qualquer título válido (mais seguro)
+  $("a").each((i, el) => {
+    const texto = $(el).text().trim();
 
-  let imagemPrincipal =
-    capa.find("img").first().attr("data-src") ||
-    capa.find("img").first().attr("src");
+    if (
+      texto.length > 30 && 
+      texto.length < 200 &&
+      !tituloPrincipal
+    ) {
+      tituloPrincipal = texto;
+    }
+  });
 
-  if (imagemPrincipal && imagemPrincipal.startsWith("data:image")) {
-    imagemPrincipal = "";
-  }
+  // Pega primeira imagem real (ignora base64)
+  $("img").each((i, el) => {
+    const src =
+      $(el).attr("data-src") ||
+      $(el).attr("data-lazy-src") ||
+      $(el).attr("src");
+
+    if (src && !src.startsWith("data:image") && !imagemPrincipal) {
+      imagemPrincipal = src;
+    }
+  });
 
   return {
     statusCode: 200,
