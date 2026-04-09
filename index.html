@@ -131,7 +131,7 @@
 
     <img class="logo-topo" src="logo.png" alt="Duna News" />
 
-    <a id="qrLink" class="qr-box" href="#" target="_blank">
+    <a id="qrLink" class="qr-box" href="#" target="_blank" rel="noopener noreferrer">
       <img id="qrCode" src="" alt="QR Code" />
       <div class="qr-texto">Veja a notícia no site</div>
     </a>
@@ -150,25 +150,54 @@
 
     let noticias = [];
     let indiceAtual = 0;
+    let intervaloSlides;
 
     function mostrarNoticia(index) {
+      if (!noticias.length) return;
+
       const noticia = noticias[index];
-      tituloEl.innerText = noticia.titulo;
-      imagemEl.src = noticia.imagem;
-      qrLinkEl.href = noticia.link;
-      qrCodeEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(noticia.link)}`;
+      tituloEl.innerText = noticia.titulo || "Sem título";
+      imagemEl.src = noticia.imagem || "";
+      qrLinkEl.href = noticia.link || "#";
+
+      if (noticia.link) {
+        qrCodeEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(noticia.link)}`;
+      } else {
+        qrCodeEl.src = "";
+      }
     }
 
     fetch("/.netlify/functions/news")
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error("Erro ao carregar notícias");
+        }
+        return res.json();
+      })
       .then(data => {
-        noticias = data;
+        noticias = Array.isArray(data) ? data : [];
+
+        if (!noticias.length) {
+          tituloEl.innerText = "Nenhuma notícia encontrada";
+          return;
+        }
+
         mostrarNoticia(0);
 
-        setInterval(() => {
-          indiceAtual = (indiceAtual + 1) % noticias.length;
-          mostrarNoticia(indiceAtual);
-        }, 10000);
+        if (noticias.length > 1) {
+          intervaloSlides = setInterval(() => {
+            indiceAtual = (indiceAtual + 1) % noticias.length;
+            mostrarNoticia(indiceAtual);
+          }, 10000);
+        }
+
+        // tempo total da peça: 3 slides x 10s = 30s
+        setTimeout(() => {
+          window.location.reload();
+        }, 30000);
+      })
+      .catch(() => {
+        tituloEl.innerText = "Erro ao carregar notícias";
       });
   </script>
 </body>
