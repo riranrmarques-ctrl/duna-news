@@ -185,13 +185,8 @@
           setInterval(() => {
             indiceAtual = (indiceAtual + 1) % noticias.length;
             mostrarNoticia(indiceAtual);
-          }, 10000);
+          }, 12000);
         }
-
-        // 40 segundos totais para garantir que o 3º slide apareça bem
-        setTimeout(() => {
-          window.location.reload();
-        }, 40000);
       })
       .catch(() => {
         tituloEl.innerText = "Erro ao carregar notícias";
