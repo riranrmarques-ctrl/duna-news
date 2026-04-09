@@ -131,7 +131,7 @@
 
     <img class="logo-topo" src="logo.png" alt="Duna News" />
 
-    <a id="qrLink" class="qr-box" href="#" target="_blank" rel="noopener noreferrer">
+    <a id="qrLink" class="qr-box" href="#" target="_blank">
       <img id="qrCode" src="" alt="QR Code" />
       <div class="qr-texto">Veja a notícia no site</div>
     </a>
@@ -167,29 +167,16 @@
     }
 
     fetch("/.netlify/functions/news")
-      .then(res => {
-        if (!res.ok) throw new Error("Erro ao carregar notícias");
-        return res.json();
-      })
+      .then(res => res.json())
       .then(data => {
-        noticias = Array.isArray(data) ? data : [];
-
-        if (!noticias.length) {
-          tituloEl.innerText = "Nenhuma notícia encontrada";
-          return;
-        }
+        noticias = data;
 
         mostrarNoticia(0);
 
-        if (noticias.length > 1) {
-          setInterval(() => {
-            indiceAtual = (indiceAtual + 1) % noticias.length;
-            mostrarNoticia(indiceAtual);
-          }, 12000);
-        }
-      })
-      .catch(() => {
-        tituloEl.innerText = "Erro ao carregar notícias";
+        setInterval(() => {
+          indiceAtual = (indiceAtual + 1) % noticias.length;
+          mostrarNoticia(indiceAtual);
+        }, 5000); // 🔥 5 segundos por slide
       });
   </script>
 </body>
