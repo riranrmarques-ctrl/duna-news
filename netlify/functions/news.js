@@ -1,179 +1,46 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Duna News</title>
+const fetch = require("node-fetch");
 
-  <style>
-    * {
-      box-sizing: border-box;
+exports.handler = async function () {
+  try {
+    const res = await fetch("https://ilheuseventos.com.br/");
+
+    if (!res.ok) {
+      throw new Error(`Falha ao acessar o site: ${res.status}`);
     }
 
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      font-family: Arial, sans-serif;
-      background: #000;
-      color: #fff;
-      overflow: hidden;
-    }
+    const html = await res.text();
 
-    .container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-    }
+    const regex =
+      /data-bg-image="url\((https:\/\/ilheuseventos\.com\.br\/[^)]+)\)"[\s\S]*?<h1 itemprop="name" class="entry-title qode-post-title">\s*<a itemprop="url" href="([^"]+)" title="([^"]+)"/gi;
 
-    .background {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: brightness(0.85);
-    }
+    const noticias = [];
+    let match;
 
-    .overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.05));
-      z-index: 1;
-    }
-
-    /* 🔥 LOGO GRANDE E COLADA NO TOPO */
-    .logo-topo {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 3;
-      width: 600px;
-      max-width: 45vw;
-    }
-
-    /* 🔥 QR SEM FUNDO */
-    .qr-box {
-      position: absolute;
-      bottom: 30px;
-      right: 30px;
-      z-index: 3;
-      text-align: center;
-      width: 200px;
-      text-decoration: none;
-      color: #fff;
-    }
-
-    .qr-box img {
-      width: 180px;
-      height: 180px;
-      object-fit: contain;
-      background: transparent; /* 🔥 remove fundo */
-      padding: 0;
-    }
-
-    .qr-texto {
-      margin-top: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      white-space: nowrap;
-    }
-
-    .conteudo {
-      position: absolute;
-      left: 34px;
-      right: 260px;
-      bottom: 34px;
-      z-index: 3;
-    }
-
-    .fonte {
-      font-size: 18px;
-      color: #2ec5ff;
-      margin-bottom: 12px;
-    }
-
-    .titulo {
-      font-size: 54px;
-      font-weight: bold;
-      line-height: 1.08;
-      max-width: 1200px;
-      text-shadow: 0 4px 16px rgba(0,0,0,0.55);
-    }
-
-    @media (max-width: 1200px) {
-      .titulo {
-        font-size: 42px;
-      }
-
-      .logo-topo {
-        width: 400px;
-      }
-
-      .qr-box {
-        width: 160px;
-      }
-
-      .qr-box img {
-        width: 140px;
-        height: 140px;
-      }
-
-      .conteudo {
-        right: 220px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <img id="imagem" class="background" src="" alt="Imagem da notícia" />
-    <div class="overlay"></div>
-
-    <img class="logo-topo" src="logo.png" alt="Duna News" />
-
-    <a id="qrLink" class="qr-box" href="#" target="_blank">
-      <img id="qrCode" src="" alt="QR Code" />
-      <div class="qr-texto">Veja a notícia no site</div>
-    </a>
-
-    <div class="conteudo">
-      <div class="fonte">Fonte: Ilhéus Eventos</div>
-      <div id="titulo" class="titulo">Carregando...</div>
-    </div>
-  </div>
-
-  <script>
-    const imagemEl = document.getElementById("imagem");
-    const tituloEl = document.getElementById("titulo");
-    const qrLinkEl = document.getElementById("qrLink");
-    const qrCodeEl = document.getElementById("qrCode");
-
-    let noticias = [];
-    let indiceAtual = 0;
-
-    function mostrarNoticia(index) {
-      const noticia = noticias[index];
-
-      tituloEl.innerText = noticia.titulo;
-      imagemEl.src = noticia.imagem;
-
-      qrLinkEl.href = noticia.link;
-      qrCodeEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(noticia.link)}`;
-    }
-
-    fetch("/.netlify/functions/news")
-      .then(res => res.json())
-      .then(data => {
-        noticias = data;
-
-        mostrarNoticia(0);
-
-        setInterval(() => {
-          indiceAtual = (indiceAtual + 1) % noticias.length;
-          mostrarNoticia(indiceAtual);
-        }, 10000);
+    while ((match = regex.exec(html)) !== null && noticias.length < 3) {
+      noticias.push({
+        imagem: match[1] || "",
+        link: match[2] || "",
+        titulo: match[3] || "Sem título"
       });
-  </script>
-</body>
-</html>
+    }
+
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      body: JSON.stringify(noticias)
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      body: JSON.stringify({
+        erro: "Erro ao buscar notícias",
+        detalhe: error.message
+      })
+    };
+  }
+};
