@@ -7,57 +7,22 @@ exports.handler = async function () {
 
   const $ = cheerio.load(html);
 
-  let tituloPrincipal = "";
-  let imagemPrincipal = "";
+  const titulo = $(".jeg_post_title a").first().text().trim();
 
-  const candidatosTitulo = [
-    ".jeg_heroblock .jeg_post_title a",
-    ".jeg_hero_item_1 .jeg_post_title a",
-    ".featured-post .jeg_post_title a",
-    ".jeg_main_content .jeg_post_title a",
-    "h1 a",
-    "h2 a"
-  ];
+  let imagem =
+    $(".jeg_thumb img").first().attr("data-src") ||
+    $(".jeg_thumb img").first().attr("src");
 
-  for (const seletor of candidatosTitulo) {
-    const texto = $(seletor).first().text().trim();
-    if (texto) {
-      tituloPrincipal = texto;
-      break;
-    }
-  }
-
-  const candidatosImagem = [
-    ".jeg_heroblock img",
-    ".jeg_hero_item_1 img",
-    ".featured-post img",
-    ".jeg_main_content img",
-    "img"
-  ];
-
-  for (const seletor of candidatosImagem) {
-    const el = $(seletor).first();
-    const src =
-      el.attr("src") ||
-      el.attr("data-src") ||
-      el.attr("data-lazy-src") ||
-      el.attr("srcset");
-
-    if (src) {
-      imagemPrincipal = src.split(",")[0].trim().split(" ")[0];
-      break;
-    }
+  if (imagem && imagem.startsWith("data:image")) {
+    imagem = "";
   }
 
   return {
     statusCode: 200,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8"
-    },
     body: JSON.stringify([
       {
-        titulo: tituloPrincipal,
-        imagem: imagemPrincipal
+        titulo,
+        imagem
       }
     ])
   };
