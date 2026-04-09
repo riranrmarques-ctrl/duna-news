@@ -5,12 +5,10 @@ exports.handler = async function () {
     const res = await fetch("https://ilheuseventos.com.br/");
     const html = await res.text();
 
-    // pega imagem (primeira imagem grande do site)
     const imagemMatch = html.match(
       /<img[^>]+src="(https:\/\/ilheuseventos\.com\.br\/[^"]+\.(jpg|jpeg|png|webp))"/i
     );
 
-    // pega título + link
     const tituloMatch = html.match(
       /<h1[^>]*class="[^"]*entry-title[^"]*"[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*title="([^"]+)"/i
     );
@@ -32,10 +30,12 @@ exports.handler = async function () {
         }
       ])
     };
-
   } catch (error) {
     return {
       statusCode: 500,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      },
       body: JSON.stringify({
         erro: "Erro ao buscar notícia",
         detalhe: error.message
