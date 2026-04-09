@@ -19,14 +19,6 @@ exports.handler = async function () {
     "h2 a"
   ];
 
-  const candidatosImagem = [
-    ".jeg_heroblock img",
-    ".jeg_hero_item_1 img",
-    ".featured-post img",
-    ".jeg_main_content img",
-    "img"
-  ];
-
   for (const seletor of candidatosTitulo) {
     const texto = $(seletor).first().text().trim();
     if (texto) {
@@ -35,10 +27,24 @@ exports.handler = async function () {
     }
   }
 
+  const candidatosImagem = [
+    ".jeg_heroblock img",
+    ".jeg_hero_item_1 img",
+    ".featured-post img",
+    ".jeg_main_content img",
+    "img"
+  ];
+
   for (const seletor of candidatosImagem) {
-    const src = $(seletor).first().attr("src");
+    const el = $(seletor).first();
+    const src =
+      el.attr("src") ||
+      el.attr("data-src") ||
+      el.attr("data-lazy-src") ||
+      el.attr("srcset");
+
     if (src) {
-      imagemPrincipal = src;
+      imagemPrincipal = src.split(",")[0].trim().split(" ")[0];
       break;
     }
   }
