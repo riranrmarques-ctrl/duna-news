@@ -153,10 +153,8 @@
 
     function mostrarNoticia(index) {
       const noticia = noticias[index];
-
       tituloEl.innerText = noticia.titulo;
       imagemEl.src = noticia.imagem;
-
       qrLinkEl.href = noticia.link;
       qrCodeEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(noticia.link)}`;
     }
@@ -165,19 +163,13 @@
       .then(res => res.json())
       .then(data => {
         noticias = data;
-
         mostrarNoticia(0);
 
         setInterval(() => {
           indiceAtual = (indiceAtual + 1) % noticias.length;
           mostrarNoticia(indiceAtual);
-        }, 10000); // troca de notícia (10s)
+        }, 10000);
       });
-
-    // 🔥 TEMPO TOTAL DA TELA NA PLATAFORMA (10s)
-    setTimeout(() => {
-      window.location.href = "about:blank";
-    }, 10000);
   </script>
 </body>
 </html>
