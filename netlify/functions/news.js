@@ -3,6 +3,11 @@ const fetch = require("node-fetch");
 exports.handler = async function () {
   try {
     const res = await fetch("https://ilheuseventos.com.br/");
+
+    if (!res.ok) {
+      throw new Error(`Falha ao acessar o site: ${res.status}`);
+    }
+
     const html = await res.text();
 
     const imagemMatch = html.match(
